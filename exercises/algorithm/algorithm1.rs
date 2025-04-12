@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -69,14 +68,98 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+	// Add PartialOrd trait bound for comparison
+	pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self
+	where
+		T: PartialOrd,
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
-        }
+		// Handle empty list cases
+		if list_a.start.is_none() {
+			// Prevent dropping nodes from list_a
+			list_a.length = 0;
+			list_a.start = None;
+			list_a.end = None;
+			return list_b;
+		}
+		if list_b.start.is_none() {
+			// Prevent dropping nodes from list_b
+			list_b.length = 0;
+			list_b.start = None;
+			list_b.end = None;
+			return list_a;
+		}
+
+		let mut merged_list = LinkedList::new();
+		merged_list.length = list_a.length + list_b.length;
+
+		let mut current_a = list_a.start;
+		let mut current_b = list_b.start;
+		let mut current_merged_tail: Option<NonNull<Node<T>>> = None;
+
+		// Determine the head of the merged list
+		unsafe {
+			let val_a = &(*current_a.unwrap().as_ptr()).val;
+			let val_b = &(*current_b.unwrap().as_ptr()).val;
+
+			if val_a <= val_b {
+				merged_list.start = current_a;
+				current_merged_tail = current_a;
+				current_a = (*current_a.unwrap().as_ptr()).next;
+			} else {
+				merged_list.start = current_b;
+				current_merged_tail = current_b;
+				current_b = (*current_b.unwrap().as_ptr()).next;
+			}
+		}
+
+		// Merge the rest of the lists
+		while let (Some(mut node_a), Some(mut node_b)) = (current_a, current_b) {
+			unsafe {
+				let val_a = &(*node_a.as_ptr()).val;
+				let val_b = &(*node_b.as_ptr()).val;
+
+				let mut tail = current_merged_tail.unwrap();
+
+				if val_a <= val_b {
+					(*tail.as_ptr()).next = Some(node_a);
+					current_merged_tail = Some(node_a);
+					current_a = (*node_a.as_ptr()).next;
+				} else {
+					(*tail.as_ptr()).next = Some(node_b);
+					current_merged_tail = Some(node_b);
+					current_b = (*node_b.as_ptr()).next;
+				}
+			}
+		}
+
+		// Append the remaining part of list_a or list_b
+		let remaining_list_start = if current_a.is_some() { current_a } else { current_b };
+		let original_end = if current_a.is_some() { list_a.end } else { list_b.end };
+
+		if let Some(mut tail) = current_merged_tail {
+			unsafe {
+				(*tail.as_ptr()).next = remaining_list_start;
+			}
+		}
+
+		// Update the end pointer of the merged list
+		if remaining_list_start.is_some() {
+			merged_list.end = original_end;
+		} else {
+			// If both lists were fully merged, the last node added is the end
+			merged_list.end = current_merged_tail;
+		}
+
+		// Prevent dropping nodes from original lists as they are now part of merged_list
+		list_a.length = 0;
+		list_a.start = None;
+		list_a.end = None;
+		list_b.length = 0;
+		list_b.start = None;
+		list_b.end = None;
+
+
+		merged_list
 	}
 }
 

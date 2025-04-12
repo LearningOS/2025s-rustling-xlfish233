@@ -3,10 +3,23 @@
 	This problem requires you to implement a sorting algorithm
 	you can use bubble sorting, insertion sorting, heap sorting, etc.
 */
-// I AM NOT DONE
+// Add PartialOrd trait bound for comparison
+fn sort<T: PartialOrd>(array: &mut [T]){
+	let n = array.len();
+	if n <= 1 {
+		return; // Already sorted
+	}
 
-fn sort<T>(array: &mut [T]){
-	//TODO
+	for i in 0..n {
+		// Last i elements are already in place
+		for j in 0..n - 1 - i {
+			// Compare adjacent elements
+			if array[j] > array[j + 1] {
+				// Swap them if they are in the wrong order
+				array.swap(j, j + 1);
+			}
+		}
+	}
 }
 #[cfg(test)]
 mod tests {

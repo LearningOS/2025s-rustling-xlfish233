@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +36,26 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        // Ensure items vec has enough space. Index 0 is unused.
+        if self.items.len() <= self.count {
+            self.items.push(value); // Push the new value
+        } else {
+            self.items[self.count] = value; // Reuse existing slot if available (e.g., after pop)
+        }
+
+        // Heapify up
+        let mut idx = self.count;
+        while idx > 1 {
+            let parent_idx = self.parent_idx(idx);
+            // If child should be higher priority than parent according to comparator
+            if (self.comparator)(&self.items[idx], &self.items[parent_idx]) {
+                self.items.swap(idx, parent_idx);
+                idx = parent_idx;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -56,9 +74,18 @@ where
         self.left_child_idx(idx) + 1
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+    // Renamed to better reflect its purpose based on comparator
+    fn get_prioritized_child_idx(&self, idx: usize) -> usize {
+        let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+
+        // Check if right child exists and has higher priority than left child
+        if right_idx <= self.count && (self.comparator)(&self.items[right_idx], &self.items[left_idx]) {
+            right_idx
+        } else {
+            // Otherwise, left child has higher priority (or only left exists)
+            left_idx
+        }
     }
 }
 
@@ -84,8 +111,31 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+
+        // Swap root with the last element
+        self.items.swap(1, self.count);
+        // Pop the original root (which is now the last element)
+        // Use replace with default to avoid clone/copy requirement if T is not Copy
+        let root = std::mem::replace(&mut self.items[self.count], T::default());
+        self.count -= 1;
+
+        // Heapify down from the new root (index 1)
+        let mut idx = 1;
+        while self.children_present(idx) {
+            let child_idx = self.get_prioritized_child_idx(idx);
+            // If child has higher priority than current node
+            if (self.comparator)(&self.items[child_idx], &self.items[idx]) {
+                self.items.swap(idx, child_idx);
+                idx = child_idx;
+            } else {
+                break; // Heap property satisfied
+            }
+        }
+
+        Some(root)
     }
 }
 
