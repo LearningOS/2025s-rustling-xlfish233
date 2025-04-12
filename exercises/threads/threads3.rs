@@ -29,21 +29,23 @@ fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
     let qc = Arc::new(q);
     let qc1 = Arc::clone(&qc);
     let qc2 = Arc::clone(&qc);
+    // Clone the sender *before* moving the original into the first thread.
+    let tx2 = tx.clone();
 
     thread::spawn(move || {
         for val in &qc1.first_half {
             println!("sending {:?}", val);
+            // The original tx is moved into this closure
             tx.send(*val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });
 
-    // Clone the sender for the second thread
-    let tx2 = tx.clone();
     thread::spawn(move || {
         for val in &qc2.second_half {
             println!("sending {:?}", val);
-            tx2.send(*val).unwrap(); // Use the cloned sender
+            // The cloned tx2 is moved into this closure
+            tx2.send(*val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });

@@ -2,7 +2,6 @@
 	graph
 	This problem requires you to implement a basic graph functio
 */
-// I AM NOT DONE
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -28,21 +27,41 @@ impl Graph for UndirectedGraph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>> {
         &self.adjacency_table
     }
+    // Implementation for add_edge for UndirectedGraph
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        let (node_a, node_b, weight) = edge;
+
+        // Ensure nodes exist, add them if they don't
+        self.add_node(node_a);
+        self.add_node(node_b);
+
+        // Add edge from node_a to node_b
+        self.adjacency_table_mutable()
+            .entry(node_a.to_string())
+            .or_default()
+            .push((node_b.to_string(), weight));
+
+        // Add edge from node_b to node_a (undirected)
+        self.adjacency_table_mutable()
+            .entry(node_b.to_string())
+            .or_default()
+            .push((node_a.to_string(), weight));
     }
-}
+} // This closes the impl Graph for UndirectedGraph block correctly
 pub trait Graph {
     fn new() -> Self;
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
-        //TODO
-		true
+        if self.adjacency_table_mutable().contains_key(node) {
+            false // Node already exists
+        } else {
+            self.adjacency_table_mutable().insert(node.to_string(), Vec::new());
+            true // Node added successfully
+        }
     }
-    fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
-    }
+    // Trait definition requires add_edge signature
+    fn add_edge(&mut self, edge: (&str, &str, i32));
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
     }
