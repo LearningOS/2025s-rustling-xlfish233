@@ -2,7 +2,6 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -52,30 +51,50 @@ impl<T> Default for Queue<T> {
     }
 }
 
-pub struct myStack<T>
+pub struct MyStack<T> // Renamed to UpperCamelCase
 {
-	//TODO
+	// Use q1 as the primary queue for enqueueing and holding elements.
+	// q2 is used as temporary storage during pop.
 	q1:Queue<T>,
 	q2:Queue<T>
 }
-impl<T> myStack<T> {
+impl<T> MyStack<T> { // Renamed to UpperCamelCase
     pub fn new() -> Self {
         Self {
-			//TODO
+			// Initialize both queues
 			q1:Queue::<T>::new(),
 			q2:Queue::<T>::new()
         }
     }
     pub fn push(&mut self, elem: T) {
-        //TODO
+        // Push element onto the main queue (q1)
+        self.q1.enqueue(elem);
     }
     pub fn pop(&mut self) -> Result<T, &str> {
-        //TODO
-		Err("Stack is empty")
+        // If q1 is empty, the stack is empty
+        if self.q1.is_empty() {
+            return Err("Stack is empty");
+        }
+
+        // Move all elements except the last one from q1 to q2
+        while self.q1.size() > 1 {
+            // unwrap is safe here because we know q1 is not empty
+            self.q2.enqueue(self.q1.dequeue().unwrap());
+        }
+
+        // The last element in q1 is the element to pop
+        // Dequeue the last element. Unwrap is safe because we checked size > 0.
+        let popped_element = self.q1.dequeue().unwrap();
+
+        // Swap q1 and q2 so q1 holds the remaining elements for the next operation.
+        // This swap must happen *after* the borrow from dequeue() is finished.
+        std::mem::swap(&mut self.q1, &mut self.q2);
+
+        Ok(popped_element) // Return the popped element wrapped in Ok
     }
     pub fn is_empty(&self) -> bool {
-		//TODO
-        true
+		      // The stack is empty if the main queue (q1) is empty
+		      self.q1.is_empty()
     }
 }
 
@@ -85,7 +104,7 @@ mod tests {
 	
 	#[test]
 	fn test_queue(){
-		let mut s = myStack::<i32>::new();
+		let mut s = MyStack::<i32>::new(); // Use renamed struct
 		assert_eq!(s.pop(), Err("Stack is empty"));
         s.push(1);
         s.push(2);
