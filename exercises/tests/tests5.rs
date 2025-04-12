@@ -22,7 +22,6 @@
 // Execute `rustlings hint tests5` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
 
 /// # Safety
 ///
@@ -31,8 +30,14 @@ unsafe fn modify_by_address(address: usize) {
     // TODO: Fill your safety notice of the code block below to match your
     // code's behavior and the contract of this function. You may use the
     // comment of the test below as your format reference.
+    // SAFETY: The caller must ensure that the address passed is valid,
+    // points to a mutable u32, and that this operation doesn't violate
+    // Rust's aliasing rules (e.g., no other references exist while this runs).
     unsafe {
-        todo!("Your code goes here")
+        // Convert the usize address back to a mutable raw pointer.
+        let ptr = address as *mut u32;
+        // Dereference the pointer and write the new value.
+        *ptr = 0xAABBCCDD;
     }
 }
 

@@ -7,7 +7,6 @@
 // Execute `rustlings hint tests3` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
 
 pub fn is_even(num: i32) -> bool {
     num % 2 == 0
@@ -15,15 +14,15 @@ pub fn is_even(num: i32) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    // No need for `use super::*` if we call the function directly
 
     #[test]
     fn is_true_when_even() {
-        assert!();
+        assert!(super::is_even(4)); // Call the function from the parent module
     }
 
     #[test]
     fn is_false_when_odd() {
-        assert!();
+        assert!(!super::is_even(5)); // Call the function from the parent module and assert false
     }
 }
